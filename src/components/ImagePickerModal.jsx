@@ -1,15 +1,45 @@
 import { useEffect, useState } from 'react'
 
-export default function ImagePickerModal({ onSelect, onClose }) {
-  const [images, setImages] = useState([])
+const TAB_LABELS = {
+  hero: 'Hero',
+  sektion: 'Sektion',
+  faser: 'Faser',
+  ovrigt: 'Övrigt',
+}
+
+function fieldToDefaultTab(fieldPath) {
+  if (!fieldPath) return null
+  if (fieldPath === 'heroImage') return 'hero'
+  if (fieldPath === 'sectionA.image' || fieldPath === 'sectionB.image') return 'sektion'
+  if (fieldPath.startsWith('phases.')) return 'faser'
+  return null
+}
+
+export default function ImagePickerModal({ onSelect, onClose, fieldPath }) {
+  const [categories, setCategories] = useState({})
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState(null)
 
   useEffect(() => {
     fetch('/bilder-manifest.json')
       .then(r => r.json())
-      .then(data => { setImages(data.images ?? []); setLoading(false) })
+      .then(data => {
+        const cats = data.categories ?? {}
+        setCategories(cats)
+        const preferred = fieldToDefaultTab(fieldPath)
+        const tabs = Object.keys(cats)
+        if (preferred && cats[preferred]?.length) {
+          setActiveTab(preferred)
+        } else {
+          setActiveTab(tabs[0] ?? null)
+        }
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
-  }, [])
+  }, [fieldPath])
+
+  const tabs = Object.keys(categories)
+  const images = activeTab ? (categories[activeTab] ?? []) : []
 
   return (
     <div
@@ -32,12 +62,30 @@ export default function ImagePickerModal({ onSelect, onClose }) {
           </button>
         </div>
 
+        {!loading && tabs.length > 1 && (
+          <div className="flex gap-1 px-4 pt-3 pb-0 border-b border-slate-100">
+            {tabs.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-widest rounded-t-lg transition-colors ${
+                  activeTab === tab
+                    ? 'bg-white text-slate-900 border border-b-white border-slate-200 -mb-px'
+                    : 'text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                {TAB_LABELS[tab] ?? tab}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="overflow-y-auto p-4">
           {loading && (
             <p className="text-center text-slate-400 text-sm py-8 animate-pulse">Laddar bilder…</p>
           )}
           {!loading && images.length === 0 && (
-            <p className="text-center text-slate-400 text-sm py-8">Inga bilder hittades i /bilder/</p>
+            <p className="text-center text-slate-400 text-sm py-8">Inga bilder i den här mappen ännu.</p>
           )}
           {!loading && images.length > 0 && (
             <div className="grid grid-cols-3 gap-3">

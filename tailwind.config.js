@@ -9,3 +9,4 @@ export default {
   },
   plugins: [],
 }
+2

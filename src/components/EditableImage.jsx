@@ -45,6 +45,7 @@ export default function EditableImage({
         <ImagePickerModal
           onSelect={handleSelect}
           onClose={() => setShowPicker(false)}
+          fieldPath={fieldPath}
         />
       )}
     </div>
