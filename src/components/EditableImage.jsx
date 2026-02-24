@@ -1,5 +1,6 @@
-import { useRef, useContext } from 'react'
+import { useState, useContext } from 'react'
 import { ImageEditContext } from '../context/ImageEditContext'
+import ImagePickerModal from './ImagePickerModal'
 
 export default function EditableImage({
   src,
@@ -9,14 +10,12 @@ export default function EditableImage({
   alt = '',
   editable = true,
 }) {
-  const fileInputRef = useRef(null)
+  const [showPicker, setShowPicker] = useState(false)
   const ctx = useContext(ImageEditContext)
 
-  function handleFileChange(e) {
-    const file = e.target.files?.[0]
-    if (!file || !ctx) return
-    ctx.updateArticleImage(fieldPath, `/bilder/${file.name}`)
-    e.target.value = ''
+  function handleSelect(imagePath) {
+    if (!ctx) return
+    ctx.updateArticleImage(fieldPath, imagePath)
   }
 
   if (!editable) {
@@ -32,7 +31,7 @@ export default function EditableImage({
       <img src={src} className={imgClassName} alt={alt} />
 
       <button
-        onClick={e => { e.stopPropagation(); fileInputRef.current?.click() }}
+        onClick={e => { e.stopPropagation(); setShowPicker(true) }}
         className="absolute top-3 right-3 z-50 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
         title="Byt bild"
         type="button"
@@ -42,13 +41,12 @@ export default function EditableImage({
         </svg>
       </button>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      {showPicker && (
+        <ImagePickerModal
+          onSelect={handleSelect}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
     </div>
   )
 }
