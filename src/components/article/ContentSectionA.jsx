@@ -15,7 +15,7 @@ export default function ContentSectionA({ label, title, titleLine2, content, quo
           </div>
         )}
       </div>
-      <div className="rounded-[2rem] overflow-hidden shadow-2xl rotate-2">
+      <div className="rounded-[2rem] overflow-hidden shadow-2xl">
         <EditableImage
           src={image}
           fieldPath="sectionA.image"

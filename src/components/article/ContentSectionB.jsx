@@ -3,7 +3,7 @@ import EditableImage from '../EditableImage'
 export default function ContentSectionB({ label, title, titleLine2, content, image, editable = true }) {
   return (
     <section className="print-section-b mb-32 flex flex-col md:flex-row gap-16 items-center">
-      <div className="md:w-1/2 order-2 md:order-1 rounded-[2rem] overflow-hidden shadow-2xl -rotate-2">
+      <div className="md:w-1/2 order-2 md:order-1 rounded-[2rem] overflow-hidden shadow-2xl">
         <EditableImage
           src={image}
           fieldPath="sectionB.image"
