@@ -9,7 +9,7 @@ export default function AdvicePhasesSection({ phases, editable = true }) {
             <span className="text-4xl font-black italic" style={{ color: 'rgba(0, 113, 186, 0.25)' }}>{phase.number}</span>
             <h3 className="text-2xl font-bold uppercase tracking-tight text-slate-800">{phase.title}</h3>
           </div>
-          <div className="print-phase-img rounded-2xl overflow-hidden h-64 mb-6 shadow-lg">
+          <div className="print-phase-img rounded-2xl overflow-hidden aspect-[940/512] mb-6 shadow-lg">
             <EditableImage
               src={phase.image}
               fieldPath={`phases.${index}.image`}
