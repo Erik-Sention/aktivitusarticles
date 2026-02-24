@@ -1,0 +1,283 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+/* =============================================
+   JPEG RENDER MODE
+   Applied to the hidden capture container for
+   image export. Only fixes vh-based heights,
+   which don't resolve in off-screen containers.
+   Everything else renders at natural web scale.
+   ============================================= */
+.jpeg-render-mode .print-hero {
+  height: 680px !important;
+  min-height: 0 !important;
+}
+
+.jpeg-render-mode [class*="rotate-"] {
+  transform: none !important;
+}
+
+/* =============================================
+   PDF RENDER MODE
+   Applied to the hidden capture container used
+   by html2canvas. At 794px width the md: Tailwind
+   breakpoints (≥768px) activate automatically so
+   two-column layouts work without forcing them.
+   We only need to tame vh-heights and giant gaps.
+   ============================================= */
+.pdf-render-mode {
+  font-family: 'Inter', sans-serif;
+  color: #0f172a;
+  background: #ffffff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Remove decorative rotations */
+.pdf-render-mode [class*="rotate-"] {
+  transform: none !important;
+}
+
+/* ---- HERO ---- */
+.pdf-render-mode .print-hero {
+  height: 260px !important;
+  min-height: 0 !important;
+  padding-bottom: 24px !important;
+  overflow: hidden !important;
+}
+
+.pdf-render-mode .print-hero h1 {
+  font-size: 3rem !important;
+  line-height: 0.95 !important;
+}
+
+.pdf-render-mode .print-hero nav {
+  margin-bottom: 8px !important;
+}
+
+.pdf-render-mode .print-hero-content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  max-width: none !important;
+}
+
+/* ---- MAIN ---- */
+.pdf-render-mode .print-main {
+  max-width: none !important;
+  width: 100% !important;
+  padding: 20px 0 20px 0 !important;
+  margin: 0 !important;
+}
+
+/* ---- INSIGHT: Intro ---- */
+.pdf-render-mode .print-intro {
+  margin-bottom: 22px !important;
+}
+
+.pdf-render-mode .print-intro-lead {
+  font-size: 1.15rem !important;
+  line-height: 1.4 !important;
+  margin-bottom: 12px !important;
+}
+
+.pdf-render-mode .print-intro-cols p {
+  font-size: 0.84rem !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}
+
+/* ---- INSIGHT: Section A ---- */
+.pdf-render-mode .print-section-a {
+  gap: 24px !important;
+  margin-bottom: 0 !important;
+}
+
+.pdf-render-mode .print-section-a img {
+  max-height: 220px !important;
+  object-fit: cover !important;
+}
+
+.pdf-render-mode .print-section-a h3 {
+  font-size: 1.2rem !important;
+  margin-bottom: 8px !important;
+}
+
+.pdf-render-mode .print-section-a p {
+  font-size: 0.84rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: 8px !important;
+}
+
+.pdf-render-mode .print-section-a .print-quote {
+  font-size: 0.8rem !important;
+  line-height: 1.4 !important;
+}
+
+/* ---- INSIGHT: Section B ---- */
+.pdf-render-mode .print-section-b {
+  gap: 24px !important;
+  margin-bottom: 24px !important;
+}
+
+.pdf-render-mode .print-section-b img {
+  max-height: 220px !important;
+  object-fit: cover !important;
+}
+
+.pdf-render-mode .print-section-b h3 {
+  font-size: 1.2rem !important;
+  margin-bottom: 8px !important;
+}
+
+.pdf-render-mode .print-section-b p {
+  font-size: 0.84rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: 8px !important;
+}
+
+/* ---- INSIGHT: Why section ---- */
+.pdf-render-mode .print-why {
+  padding: 24px 28px !important;
+  border-radius: 14px !important;
+  margin-bottom: 12px !important;
+}
+
+.pdf-render-mode .print-why h2 {
+  font-size: 1.3rem !important;
+  margin-bottom: 14px !important;
+}
+
+.pdf-render-mode .print-why .print-why-number {
+  font-size: 1.4rem !important;
+  margin-bottom: 4px !important;
+}
+
+.pdf-render-mode .print-why h4 {
+  font-size: 0.76rem !important;
+  margin-bottom: 3px !important;
+}
+
+.pdf-render-mode .print-why p {
+  font-size: 0.7rem !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+}
+
+/* ---- FOOTER ---- */
+.pdf-render-mode .print-footer {
+  max-width: none !important;
+  padding: 10px 0 !important;
+  margin: 0 !important;
+}
+
+/* ---- ADVICE: Intro ---- */
+.pdf-render-mode .print-advice-intro {
+  max-width: none !important;
+  margin-bottom: 20px !important;
+}
+
+.pdf-render-mode .print-advice-intro h2 {
+  font-size: 1.1rem !important;
+  line-height: 1.45 !important;
+  margin-bottom: 10px !important;
+}
+
+.pdf-render-mode .print-advice-intro p {
+  font-size: 0.84rem !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}
+
+/* ---- ADVICE: Phases ---- */
+.pdf-render-mode .print-advice-phases {
+  gap: 20px !important;
+  margin-bottom: 0 !important;
+}
+
+.pdf-render-mode .print-advice-phases .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 10px !important;
+}
+
+.pdf-render-mode .print-advice-phases h3 {
+  font-size: 0.88rem !important;
+  line-height: 1.2 !important;
+}
+
+.pdf-render-mode .print-phase-img {
+  height: 180px !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.pdf-render-mode .print-phase-img img {
+  height: 180px !important;
+  object-fit: cover !important;
+}
+
+.pdf-render-mode .print-advice-phases p {
+  font-size: 0.78rem !important;
+  line-height: 1.45 !important;
+  margin: 0 !important;
+}
+
+.pdf-render-mode .print-advice-phases li {
+  font-size: 0.78rem !important;
+  line-height: 1.45 !important;
+}
+
+.pdf-render-mode .print-advice-phases .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 4px !important;
+}
+
+/* ---- ADVICE: CTA ---- */
+.pdf-render-mode .print-advice-cta {
+  padding: 40px 36px !important;
+  border-radius: 16px !important;
+}
+
+.pdf-render-mode .print-advice-cta h2 {
+  font-size: 1.6rem !important;
+  line-height: 1.15 !important;
+  margin-bottom: 12px !important;
+}
+
+.pdf-render-mode .print-advice-cta p {
+  font-size: 0.88rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: 14px !important;
+}
+
+.pdf-render-mode .print-advice-cta h4 {
+  font-size: 0.76rem !important;
+  margin-bottom: 4px !important;
+}
+
+.pdf-render-mode .print-advice-cta .p-6 {
+  padding: 14px !important;
+}
+
+.pdf-render-mode .print-advice-cta a {
+  padding: 10px 24px !important;
+}
+
+.pdf-render-mode .print-advice-cta .max-w-3xl {
+  max-width: none !important;
+}
+
+/* =============================================
+   PRINT FALLBACK (Ctrl+P)
+   Only hides the toolbar. The pdf-render-mode
+   CSS above handles the actual PDF export.
+   ============================================= */
+@media print {
+  @page { size: A4 portrait; margin: 10mm 12mm; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .no-print { display: none !important; }
+}
