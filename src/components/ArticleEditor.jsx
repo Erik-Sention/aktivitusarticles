@@ -57,8 +57,21 @@ function SectionHeader({ title }) {
   )
 }
 
+function normalizeArticle(article) {
+  if (article.sections) return article
+  const sections = []
+  if (article.sectionA) sections.push({ type: 'textLeft', ...article.sectionA })
+  if (article.sectionB) sections.push({ type: 'imageLeft', ...article.sectionB })
+  return { ...article, sections }
+}
+
+const SECTION_LABELS = {
+  textLeft: 'Text vänster, bild höger',
+  imageLeft: 'Bild vänster, text höger',
+}
+
 export default function ArticleEditor({ article, onSave }) {
-  const [form, setForm] = useState(JSON.parse(JSON.stringify(article)))
+  const [form, setForm] = useState(() => normalizeArticle(JSON.parse(JSON.stringify(article))))
 
   function set(path, value) {
     setForm(prev => {
@@ -71,10 +84,57 @@ export default function ArticleEditor({ article, onSave }) {
     })
   }
 
+  function setSectionField(idx, field, value) {
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      next.sections[idx][field] = value
+      return next
+    })
+  }
+
+  function addSection(type) {
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      next.sections.push({ type, label: '', title: '', titleLine2: '', content: '', quote: '', image: '' })
+      return next
+    })
+  }
+
+  function removeSection(idx) {
+    if (!window.confirm('Ta bort den här sektionen? Åtgärden kan inte ångras förrän du sparar.')) return
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      next.sections.splice(idx, 1)
+      return next
+    })
+  }
+
   function setWhyItem(index, field, value) {
     setForm(prev => {
       const next = JSON.parse(JSON.stringify(prev))
       next.why.items[index][field] = value
+      return next
+    })
+  }
+
+  function addWhyItem() {
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      const n = next.why.items.length + 1
+      next.why.items.push({ number: String(n).padStart(2, '0'), title: '', content: '' })
+      return next
+    })
+  }
+
+  function removeWhyItem(idx) {
+    if (form.why.items.length < 2) {
+      window.alert('Det måste finnas minst en punkt i Varför-sektionen.')
+      return
+    }
+    if (!window.confirm('Ta bort den här punkten?')) return
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      next.why.items.splice(idx, 1)
       return next
     })
   }
@@ -87,7 +147,7 @@ export default function ArticleEditor({ article, onSave }) {
     if (!window.confirm('Återställ artikeln till standardinnehåll? Dina ändringar skrivs över.')) return
     try {
       const reset = await resetArticleToDefault(form)
-      setForm(JSON.parse(JSON.stringify(reset)))
+      setForm(normalizeArticle(JSON.parse(JSON.stringify(reset))))
       onSave(reset)
     } catch (err) {
       alert(`Kunde inte återställa: ${err.message}`)
@@ -110,35 +170,77 @@ export default function ArticleEditor({ article, onSave }) {
       <TextField label="Brödtext kolumn 1" value={form.intro.col1} onChange={v => set('intro.col1', v)} multiline rows={4} />
       <TextField label="Brödtext kolumn 2" value={form.intro.col2} onChange={v => set('intro.col2', v)} multiline rows={4} />
 
-      <SectionHeader title="Sektion A — Text vänster, bild höger" />
-      <TextField label="Etikett (liten text ovan rubrik)" value={form.sectionA.label} onChange={v => set('sectionA.label', v)} />
-      <div className="grid grid-cols-2 gap-4">
-        <TextField label="Rubrik rad 1" value={form.sectionA.title} onChange={v => set('sectionA.title', v)} />
-        <TextField label="Rubrik rad 2" value={form.sectionA.titleLine2} onChange={v => set('sectionA.titleLine2', v)} />
-      </div>
-      <TextField label="Brödtext" value={form.sectionA.content} onChange={v => set('sectionA.content', v)} multiline rows={4} />
-      <TextField label="Citat (inuti ram)" value={form.sectionA.quote} onChange={v => set('sectionA.quote', v)} multiline rows={2} />
-      <ImageField label="Bild URL" value={form.sectionA.image} onChange={v => set('sectionA.image', v)} />
+      {(form.sections ?? []).map((section, i) => (
+        <div key={i}>
+          <div className="flex items-center justify-between pt-6 pb-2 border-t border-slate-100">
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-teal-600">
+              Sektion {i + 1} — {SECTION_LABELS[section.type] ?? section.type}
+            </h3>
+            <button
+              onClick={() => removeSection(i)}
+              className="text-slate-300 hover:text-red-400 transition-colors text-xs font-semibold uppercase tracking-widest"
+            >Ta bort sektion</button>
+          </div>
+          <div className="space-y-4">
+            <div className="flex gap-3 items-center">
+              <label className="text-xs font-bold uppercase tracking-widest text-slate-500">Layout</label>
+              <select
+                value={section.type}
+                onChange={e => setSectionField(i, 'type', e.target.value)}
+                className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="textLeft">Text vänster, bild höger</option>
+                <option value="imageLeft">Bild vänster, text höger</option>
+              </select>
+            </div>
+            <TextField label="Etikett (liten text ovan rubrik)" value={section.label ?? ''} onChange={v => setSectionField(i, 'label', v)} />
+            <div className="grid grid-cols-2 gap-4">
+              <TextField label="Rubrik rad 1" value={section.title ?? ''} onChange={v => setSectionField(i, 'title', v)} />
+              <TextField label="Rubrik rad 2" value={section.titleLine2 ?? ''} onChange={v => setSectionField(i, 'titleLine2', v)} />
+            </div>
+            <TextField label="Brödtext" value={section.content ?? ''} onChange={v => setSectionField(i, 'content', v)} multiline rows={4} />
+            {section.type === 'textLeft' && (
+              <TextField label="Citat (inuti ram)" value={section.quote ?? ''} onChange={v => setSectionField(i, 'quote', v)} multiline rows={2} />
+            )}
+            <ImageField label="Bild URL" value={section.image ?? ''} onChange={v => setSectionField(i, 'image', v)} />
+          </div>
+        </div>
+      ))}
 
-      <SectionHeader title="Sektion B — Bild vänster, text höger" />
-      <TextField label="Etikett" value={form.sectionB.label} onChange={v => set('sectionB.label', v)} />
-      <div className="grid grid-cols-2 gap-4">
-        <TextField label="Rubrik rad 1" value={form.sectionB.title} onChange={v => set('sectionB.title', v)} />
-        <TextField label="Rubrik rad 2" value={form.sectionB.titleLine2} onChange={v => set('sectionB.titleLine2', v)} />
+      <div className="flex gap-3 pt-2">
+        <button
+          onClick={() => addSection('textLeft')}
+          className="text-teal-500 text-xs font-bold uppercase tracking-widest hover:text-teal-600"
+        >+ Sektion (text vänster)</button>
+        <button
+          onClick={() => addSection('imageLeft')}
+          className="text-teal-500 text-xs font-bold uppercase tracking-widest hover:text-teal-600"
+        >+ Sektion (bild vänster)</button>
       </div>
-      <TextField label="Brödtext" value={form.sectionB.content} onChange={v => set('sectionB.content', v)} multiline rows={4} />
-      <ImageField label="Bild URL" value={form.sectionB.image} onChange={v => set('sectionB.image', v)} />
 
       <SectionHeader title="Varför-sektion (mörk)" />
       <TextField label="Rubrik" value={form.why.title} onChange={v => set('why.title', v)} />
 
       {form.why.items.map((item, i) => (
         <div key={i} className="bg-slate-50 rounded-xl p-4 space-y-3">
-          <p className="text-xs font-black uppercase tracking-widest text-teal-600">{item.number}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-black uppercase tracking-widest text-teal-600">{item.number}</p>
+            <button
+              onClick={() => removeWhyItem(i)}
+              className="text-slate-300 hover:text-red-400 transition-colors text-xs font-semibold uppercase tracking-widest"
+            >Ta bort</button>
+          </div>
           <TextField label="Titel" value={item.title} onChange={v => setWhyItem(i, 'title', v)} />
           <TextField label="Beskrivning" value={item.content} onChange={v => setWhyItem(i, 'content', v)} multiline rows={2} />
         </div>
       ))}
+
+      <button
+        onClick={addWhyItem}
+        className="text-teal-500 text-xs font-bold uppercase tracking-widest hover:text-teal-600"
+      >
+        + Lägg till punkt
+      </button>
 
       <SectionHeader title="Referencer" />
       <TextField

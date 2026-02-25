@@ -103,6 +103,30 @@ export default function AdviceEditor({ article, onSave }) {
     })
   }
 
+  function addPhase() {
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      const n = next.phases.length + 1
+      next.phases.push({
+        number: String(n).padStart(2, '0'),
+        title: '',
+        image: '',
+        focusLabel: '',
+        items: [],
+      })
+      return next
+    })
+  }
+
+  function removePhase(phaseIdx) {
+    if (!window.confirm('Ta bort den här fasen? Åtgärden kan inte ångras förrän du sparar.')) return
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      next.phases.splice(phaseIdx, 1)
+      return next
+    })
+  }
+
   async function handleReset() {
     if (!window.confirm('Återställ artikeln till standardinnehåll? Dina ändringar skrivs över.')) return
     try {
@@ -139,7 +163,13 @@ export default function AdviceEditor({ article, onSave }) {
 
       {form.phases.map((phase, pi) => (
         <div key={pi}>
-          <SectionHeader title={`Fas ${pi + 1}`} />
+          <div className="flex items-center justify-between pt-6 pb-2 border-t border-slate-100">
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-teal-600">Fas {pi + 1}</h3>
+            <button
+              onClick={() => removePhase(pi)}
+              className="text-slate-300 hover:text-red-400 transition-colors text-xs font-semibold uppercase tracking-widest"
+            >Ta bort fas</button>
+          </div>
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-3">
               <TextField label="Nr" value={phase.number} onChange={v => setPhaseField(pi, 'number', v)} />
@@ -188,6 +218,13 @@ export default function AdviceEditor({ article, onSave }) {
           </div>
         </div>
       ))}
+
+      <button
+        onClick={addPhase}
+        className="text-teal-500 text-xs font-bold uppercase tracking-widest hover:text-teal-600 pt-2"
+      >
+        + Lägg till fas
+      </button>
 
       <SectionHeader title="CTA-sektion (mörk)" />
       <TextField label="Liten tag (t.ex. 'Redan aktiv?')" value={form.cta.tag || ''} onChange={v => set('cta.tag', v)} />

@@ -6,6 +6,12 @@ import WhySection from './article/WhySection'
 import ArticleFooter from './article/ArticleFooter'
 
 export default function ArticlePreview({ article, editable = true }) {
+  // Support both new sections array and old sectionA/sectionB format
+  const sections = article.sections ?? [
+    article.sectionA && { type: 'textLeft', ...article.sectionA },
+    article.sectionB && { type: 'imageLeft', ...article.sectionB },
+  ].filter(Boolean)
+
   return (
     <div className="bg-white min-h-screen font-sans text-slate-900 antialiased">
       <HeroSection
@@ -23,24 +29,30 @@ export default function ArticlePreview({ article, editable = true }) {
           col2={article.intro.col2}
         />
 
-        <ContentSectionA
-          label={article.sectionA.label}
-          title={article.sectionA.title}
-          titleLine2={article.sectionA.titleLine2}
-          content={article.sectionA.content}
-          quote={article.sectionA.quote}
-          image={article.sectionA.image}
-          editable={editable}
-        />
-
-        <ContentSectionB
-          label={article.sectionB.label}
-          title={article.sectionB.title}
-          titleLine2={article.sectionB.titleLine2}
-          content={article.sectionB.content}
-          image={article.sectionB.image}
-          editable={editable}
-        />
+        {sections.map((section, i) =>
+          section.type === 'textLeft' ? (
+            <ContentSectionA
+              key={i}
+              label={section.label}
+              title={section.title}
+              titleLine2={section.titleLine2}
+              content={section.content}
+              quote={section.quote}
+              image={section.image}
+              editable={editable}
+            />
+          ) : (
+            <ContentSectionB
+              key={i}
+              label={section.label}
+              title={section.title}
+              titleLine2={section.titleLine2}
+              content={section.content}
+              image={section.image}
+              editable={editable}
+            />
+          )
+        )}
 
         <WhySection
           title={article.why.title}
