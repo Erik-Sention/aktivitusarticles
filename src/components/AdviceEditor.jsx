@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { resetArticleToDefault } from '../store'
 
 function ImageField({ label, value, onChange }) {
   return (
@@ -102,6 +103,17 @@ export default function AdviceEditor({ article, onSave }) {
     })
   }
 
+  async function handleReset() {
+    if (!window.confirm('Återställ artikeln till standardinnehåll? Dina ändringar skrivs över.')) return
+    try {
+      const reset = await resetArticleToDefault(form)
+      setForm(JSON.parse(JSON.stringify(reset)))
+      onSave(reset)
+    } catch (err) {
+      alert(`Kunde inte återställa: ${err.message}`)
+    }
+  }
+
   function setCardField(cardIdx, field, value) {
     setForm(prev => {
       const next = JSON.parse(JSON.stringify(prev))
@@ -195,12 +207,27 @@ export default function AdviceEditor({ article, onSave }) {
         <TextField label="Knapp-URL" value={form.cta.buttonUrl || ''} onChange={v => set('cta.buttonUrl', v)} />
       </div>
 
-      <div className="pt-6 pb-16">
+      <SectionHeader title="Referencer" />
+      <TextField
+        label="Referencer (en per rad – visas i artikelns footer)"
+        value={form.references ?? ''}
+        onChange={v => set('references', v)}
+        multiline
+        rows={6}
+      />
+
+      <div className="pt-6 pb-16 space-y-3">
         <button
           onClick={() => onSave(form)}
           className="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-4 rounded-xl uppercase tracking-widest text-sm transition-colors"
         >
           Spara artikel
+        </button>
+        <button
+          onClick={handleReset}
+          className="w-full bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-600 border border-slate-200 font-semibold py-3 rounded-xl text-sm transition-colors"
+        >
+          Återställ till standardinnehåll
         </button>
       </div>
     </div>

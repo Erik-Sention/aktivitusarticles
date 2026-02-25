@@ -48,7 +48,7 @@ export default function ArticlePreview({ article, editable = true }) {
         />
       </main>
 
-      <ArticleFooter />
+      <ArticleFooter references={article.references} editable={editable} />
     </div>
   )
 }
