@@ -30,7 +30,7 @@ function renderCallout(text) {
   return elements
 }
 
-export default function AdviceCtaSection({ tag, title, body, cards, calloutTitle, buttonText }) {
+export default function AdviceCtaSection({ tag, title, body, cards, callouts, calloutTitle, buttonText }) {
   return (
     <section className="print-advice-cta rounded-[3rem] p-12 md:p-16 text-white relative overflow-hidden" style={{ backgroundColor: '#0071BA' }}>
       <div className="relative z-10 max-w-3xl">
@@ -51,7 +51,32 @@ export default function AdviceCtaSection({ tag, title, body, cards, calloutTitle
           </div>
         )}
 
-        {(calloutTitle || buttonText) && (
+        {callouts && callouts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+            {callouts.map((callout, i) => (
+              <div key={i}>
+                {callout.title && (
+                  <h3 className="text-white text-xl font-bold mb-3">{callout.title}</h3>
+                )}
+                {callout.type === 'button' ? (
+                  <a
+                    href={callout.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full block bg-white font-bold py-4 px-8 rounded-2xl text-center hover:bg-white/90 transition-colors"
+                    style={{ color: '#0071BA' }}
+                  >
+                    {callout.label}
+                  </a>
+                ) : (
+                  <div className="bg-white rounded-2xl px-6 py-5 text-sm font-medium leading-relaxed" style={{ color: '#0071BA' }}>
+                    {renderCallout(callout.text)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (calloutTitle || buttonText) && (
           <div className="mt-4">
             {calloutTitle && (
               <h3 className="text-white text-xl font-bold mb-3">{calloutTitle}</h3>

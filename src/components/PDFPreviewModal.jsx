@@ -10,6 +10,59 @@ const PREVIEW_WIDTH = 600
 // A4 page height in canvas pixels at scale=2: (297/210) × 1280 × 2 ≈ 3620
 const PAGE_H_CANVAS = Math.round((297 / 210) * ARTICLE_WIDTH * 2)
 
+function collectTextData(container) {
+  const containerRect = container.getBoundingClientRect()
+  const items = []
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+
+  while (walker.nextNode()) {
+    const textNode = walker.currentNode
+    const fullText = textNode.textContent
+    if (!fullText.trim()) continue
+
+    const parent = textNode.parentElement
+    const fontSizePx = parseFloat(window.getComputedStyle(parent).fontSize) || 12
+
+    // Measure each word individually using Range so wrapped text is handled correctly
+    const wordRegex = /\S+/g
+    let match
+    while ((match = wordRegex.exec(fullText)) !== null) {
+      const range = document.createRange()
+      range.setStart(textNode, match.index)
+      range.setEnd(textNode, match.index + match[0].length)
+      const rect = range.getBoundingClientRect()
+      if (!rect.width || !rect.height) continue
+      items.push({
+        text: match[0],
+        xCanvas: (rect.left - containerRect.left) * 2,
+        yCanvas: (rect.top - containerRect.top) * 2,
+        heightCanvas: rect.height * 2,
+        fontSizePx,
+      })
+    }
+  }
+  return items
+}
+
+function collectLinkData(container) {
+  const containerRect = container.getBoundingClientRect()
+  const items = []
+  container.querySelectorAll('a[href]').forEach(anchor => {
+    const href = anchor.getAttribute('href')
+    if (!href || href.startsWith('#')) return
+    const rect = anchor.getBoundingClientRect()
+    if (!rect.width || !rect.height) return
+    items.push({
+      url: href,
+      xCanvas: (rect.left - containerRect.left) * 2,
+      yCanvas: (rect.top - containerRect.top) * 2,
+      wCanvas: rect.width * 2,
+      hCanvas: rect.height * 2,
+    })
+  })
+  return items
+}
+
 export default function PDFPreviewModal({ article, isAdvice, onClose }) {
   const [isCapturing, setIsCapturing] = useState(true)
   const [capturedCanvas, setCapturedCanvas] = useState(null)
@@ -20,6 +73,8 @@ export default function PDFPreviewModal({ article, isAdvice, onClose }) {
   const [breakPositions, setBreakPositions] = useState([]) // canvas px
   const [isGenerating, setIsGenerating] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [textData, setTextData] = useState([])
+  const [linkData, setLinkData] = useState([])
   const captureRef = useRef(null)
 
   // Capture the article once on mount
@@ -51,11 +106,24 @@ export default function PDFPreviewModal({ article, isAdvice, onClose }) {
       const cH = canvas.height
       const scale = PREVIEW_WIDTH / cW  // ≈ 0.234
 
+      // Smart break: place just before the blue highlight section (CTA or Why)
       const breaks = []
-      let y = PAGE_H_CANVAS
-      while (y < cH - 100) {
-        breaks.push(Math.round(y))
-        y += PAGE_H_CANVAS
+      const containerRect = el.getBoundingClientRect()
+      const blueSection = el.querySelector('.print-advice-cta, .print-why')
+      if (blueSection) {
+        const secRect = blueSection.getBoundingClientRect()
+        const breakY = Math.round((secRect.top - containerRect.top) * 2) - 40
+        if (breakY > 500 && breakY < cH - 200) {
+          breaks.push(breakY)
+        }
+      }
+      // Fallback: evenly spaced at A4 intervals
+      if (breaks.length === 0) {
+        let y = PAGE_H_CANVAS
+        while (y < cH - 100) {
+          breaks.push(Math.round(y))
+          y += PAGE_H_CANVAS
+        }
       }
 
       setCapturedCanvas(canvas)
@@ -64,6 +132,8 @@ export default function PDFPreviewModal({ article, isAdvice, onClose }) {
       setPreviewScale(scale)
       setBreakPositions(breaks)
       setPreviewDataUrl(canvas.toDataURL('image/jpeg', 0.85))
+      setTextData(collectTextData(el))
+      setLinkData(collectLinkData(el))
       setIsCapturing(false)
     }, 200)
 
@@ -119,15 +189,19 @@ export default function PDFPreviewModal({ article, isAdvice, onClose }) {
       }
 
       // Pre-compute slice heights so we know page 1's size before creating the doc
+      // Use 'landscape' when sliceMmH < 210 to prevent jsPDF from swapping width/height
+      // (jsPDF in portrait swaps dims so height >= width, which clips content when sliceMmH < 210)
       const slices = pages.map(({ start, end }) => {
         const sliceH = end - start
-        return { start, sliceH, sliceMmH: (sliceH / canvasW) * 210 }
+        const sliceMmH = (sliceH / canvasW) * 210
+        const orientation = sliceMmH >= 210 ? 'portrait' : 'landscape'
+        return { start, sliceH, sliceMmH, orientation }
       })
 
       // First page height matches the user's selection exactly (not hardcoded A4)
-      const doc = new jsPDF({ unit: 'mm', format: [210, slices[0].sliceMmH], orientation: 'portrait' })
+      const doc = new jsPDF({ unit: 'mm', format: [210, slices[0].sliceMmH], orientation: slices[0].orientation })
       for (let i = 0; i < slices.length; i++) {
-        const { start, sliceH, sliceMmH } = slices[i]
+        const { start, sliceH, sliceMmH, orientation } = slices[i]
         const sliceCanvas = document.createElement('canvas')
         sliceCanvas.width = canvasW
         sliceCanvas.height = sliceH
@@ -136,8 +210,32 @@ export default function PDFPreviewModal({ article, isAdvice, onClose }) {
         if (i === 0) {
           doc.addImage(imgData, 'JPEG', 0, 0, 210, sliceMmH)
         } else {
-          doc.addPage([210, sliceMmH])
+          doc.addPage([210, sliceMmH], orientation)
           doc.addImage(imgData, 'JPEG', 0, 0, 210, sliceMmH)
+        }
+
+        // Invisible text overlay – enables text selection/search in PDF readers
+        const fontSizeCache = new Map()
+        for (const item of textData) {
+          if (item.yCanvas < start || item.yCanvas >= start + sliceH) continue
+          const fontSizePt = Math.max(1, Math.round(item.fontSizePx * (210 / ARTICLE_WIDTH) * (72 / 25.4)))
+          if (!fontSizeCache.has(fontSizePt)) {
+            doc.setFontSize(fontSizePt)
+            fontSizeCache.set(fontSizePt, true)
+          }
+          const xMm = item.xCanvas / canvasW * 210
+          const yMm = (item.yCanvas - start + item.heightCanvas * 0.8) / canvasW * 210
+          doc.text(item.text, xMm, yMm, { renderingMode: 'invisible' })
+        }
+
+        // Clickable link annotations
+        for (const link of linkData) {
+          if (link.yCanvas + link.hCanvas <= start || link.yCanvas >= start + sliceH) continue
+          const xMm = link.xCanvas / canvasW * 210
+          const yMm = (link.yCanvas - start) / canvasW * 210
+          const wMm = link.wCanvas / canvasW * 210
+          const hMm = link.hCanvas / canvasW * 210
+          doc.link(xMm, yMm, wMm, hMm, { url: link.url })
         }
       }
 

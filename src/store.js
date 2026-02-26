@@ -351,9 +351,10 @@ const SEED_ARTICLES = [
         { title: 'Personlig Tränare', description: 'Skräddarsydda program baserade på din laktatprofil och VO₂ Max.' },
         { title: 'Löp- & Cykelcoach', description: 'Optimera din teknik och nå dina mål på tävling eller i din personliga träning.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Personlig Tränare eller Löp- & Cykelcoach\n- Boka ett kostnadsfritt introduktionssamtal',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Personlig Tränare eller Löp- & Cykelcoach\n- Boka ett kostnadsfritt introduktionssamtal' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
   {
@@ -411,9 +412,10 @@ const SEED_ARTICLES = [
         { title: 'Sömnrådgivning', description: 'Djupgående analys av dina rutiner och biologiska förutsättningar för sömn.' },
         { title: 'HRV-analys', description: 'Hjärtvariabilitetsmätning som avslöjar hur ditt nervsystem faktiskt återhämtar sig.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Sömnrådgivning eller HRV-analys\n- Berätta kort om dina sömnmönster så matchar vi rätt coach',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Sömnrådgivning eller HRV-analys\n- Berätta kort om dina sömnmönster så matchar vi rätt coach' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
   {
@@ -472,9 +474,10 @@ const SEED_ARTICLES = [
         { title: 'Individuellt kostschema', description: 'Skräddarsytt baserat på din ämnesomsättning och dina hälsomål.' },
         { title: 'Metabol Analys', description: 'Få reda på exakt hur din kropp förbränner fett och kolhydrater vid olika intensiteter.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Individuellt kostschema eller Metabol Analys\n- Berätta om dina mål så skräddarsyr vi upplägget',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Individuellt kostschema eller Metabol Analys\n- Berätta om dina mål så skräddarsyr vi upplägget' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
   {
@@ -522,9 +525,10 @@ const SEED_ARTICLES = [
         { title: 'Stresscoaching', description: 'Individuella samtal med fokus på strategier för gränssättning och återhämtning i arbetslivet.' },
         { title: 'HRV-analys', description: 'Mätning av hjärtvariabilitet under flera dygn för att svart på vitt se när din kropp faktiskt återhämtar sig.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Stresscoaching eller HRV-analys\n- Berätta om din situation så matchar vi rätt stöd',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Stresscoaching eller HRV-analys\n- Berätta om din situation så matchar vi rätt stöd' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
   {
@@ -571,9 +575,10 @@ const SEED_ARTICLES = [
         { title: 'Hälsocoaching', description: 'Individuella samtal för att identifiera sociala stressfaktorer och bygga resiliens.' },
         { title: 'Gruppaktiviteter', description: 'Möjlighet att träna och utvecklas tillsammans med andra i ett professionellt lett sammanhang.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Hälsocoaching eller Gruppaktiviteter\n- Vi berättar mer om hur vi arbetar med social hälsa',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Hälsocoaching eller Gruppaktiviteter\n- Vi berättar mer om hur vi arbetar med social hälsa' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
   {
@@ -620,9 +625,10 @@ const SEED_ARTICLES = [
         { title: 'Livsstilscoaching', description: 'Individuellt stöd för att optimera din vardag och stärka din mentala resiliens.' },
         { title: 'Hälsokontroll', description: 'Få en djupare förståelse för hur din livsstil påverkar din fysiska status.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Livsstilscoaching eller Hälsokontroll\n- Berätta om din situation för ett skräddarsytt upplägg',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Livsstilscoaching eller Hälsokontroll\n- Berätta om din situation för ett skräddarsytt upplägg' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
   {
@@ -680,9 +686,10 @@ const SEED_ARTICLES = [
         { title: 'Rökavvänjningscoach', description: 'Personlig plan och stöd i realtid under de kritiska första månaderna.' },
         { title: 'Hälsokontroll före & efter', description: 'Mät konkreta förbättringar i blodtryck, kondition och kärlhälsa.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Rökavvänjningscoach eller Hälsokontroll\n- Vi sätter upp en personlig plan för din avvänjning',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj Rökavvänjningscoach eller Hälsokontroll\n- Vi sätter upp en personlig plan för din avvänjning' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
   {
@@ -740,9 +747,10 @@ const SEED_ARTICLES = [
         { title: 'HRV-analys', description: 'Se i realtid hur ditt nervsystem och sömnkvalitet svarar på livsstilsförändringar.' },
         { title: 'Metabol blodmarkörpanel', description: 'Mät levermarkörer, triglycerider och blodtryck för att se konkreta biologiska vinster.' },
       ],
-      calloutTitle: 'Så här bokar du',
-      buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj HRV-analys eller Metabol blodmarkörpanel\n- Få objektiva data på hur din kropp svarar på förändringen',
-      buttonUrl: 'https://aktivitus.se/bokning',
+      callouts: [
+        { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj HRV-analys eller Metabol blodmarkörpanel\n- Få objektiva data på hur din kropp svarar på förändringen' },
+        { title: '', type: 'text', text: '' },
+      ],
     },
   },
 ]
@@ -858,9 +866,10 @@ export async function createArticle(type = 'insight') {
             { title: 'Tjänst 1', description: 'Beskrivning av tjänsten.' },
             { title: 'Tjänst 2', description: 'Beskrivning av tjänsten.' },
           ],
-          calloutTitle: 'Så här bokar du',
-          buttonText: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj den tjänst som passar ditt behov\n- Boka ett kostnadsfritt introduktionssamtal',
-          buttonUrl: 'https://aktivitus.se/bokning',
+          callouts: [
+            { title: 'Så här bokar du', type: 'text', text: 'Så här kommer du igång:\n- Gå till fliken "Boka" i appen\n- Välj den tjänst som passar ditt behov\n- Boka ett kostnadsfritt introduktionssamtal' },
+            { title: '', type: 'text', text: '' },
+          ],
         },
       }
     : {

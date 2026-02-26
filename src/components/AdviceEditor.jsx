@@ -58,8 +58,20 @@ function SectionHeader({ title }) {
   )
 }
 
+function initCallouts(cta) {
+  if (cta.callouts && cta.callouts.length > 0) return cta.callouts
+  return [
+    { title: cta.calloutTitle || '', type: 'text', text: cta.buttonText || '' },
+    { title: '', type: 'text', text: '' },
+  ]
+}
+
 export default function AdviceEditor({ article, onSave }) {
-  const [form, setForm] = useState(JSON.parse(JSON.stringify(article)))
+  const initial = JSON.parse(JSON.stringify(article))
+  if (!initial.cta.callouts) {
+    initial.cta.callouts = initCallouts(initial.cta)
+  }
+  const [form, setForm] = useState(initial)
 
   function set(path, value) {
     setForm(prev => {
@@ -143,6 +155,27 @@ export default function AdviceEditor({ article, onSave }) {
     setForm(prev => {
       const next = JSON.parse(JSON.stringify(prev))
       next.cta.cards[cardIdx][field] = value
+      return next
+    })
+  }
+
+  function setCalloutField(idx, field, value) {
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      next.cta.callouts[idx][field] = value
+      return next
+    })
+  }
+
+  function setCalloutType(idx, type) {
+    setForm(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      const existing = next.cta.callouts[idx]
+      if (type === 'button') {
+        next.cta.callouts[idx] = { title: existing.title || '', type: 'button', label: existing.label || '', url: existing.url || '' }
+      } else {
+        next.cta.callouts[idx] = { title: existing.title || '', type: 'text', text: existing.text || '' }
+      }
       return next
     })
   }
@@ -235,19 +268,43 @@ export default function AdviceEditor({ article, onSave }) {
       {form.cta.cards && form.cta.cards.map((card, ci) => (
         <div key={ci} className="bg-slate-50 rounded-xl p-4 space-y-2">
           <p className="text-xs font-black uppercase tracking-widest text-teal-600">Kort {ci + 1}</p>
-          <TextField label="Titel" value={card.title} onChange={v => setCardField(ci, 'title', v)} />
-          <TextField label="Beskrivning" value={card.description} onChange={v => setCardField(ci, 'description', v)} multiline rows={2} />
+          <TextField label="Titel" value={card.title || ''} onChange={v => setCardField(ci, 'title', v)} />
+          <TextField label="Beskrivning" value={card.description || ''} onChange={v => setCardField(ci, 'description', v)} multiline rows={2} />
         </div>
       ))}
 
-      <TextField label="Callout-rubrik" value={form.cta.calloutTitle || ''} onChange={v => set('cta.calloutTitle', v)} />
-      <TextField
-        label="Callout-text (stöder radbrytningar; rader som börjar med - blir punkter)"
-        value={form.cta.buttonText || ''}
-        onChange={v => set('cta.buttonText', v)}
-        multiline
-        rows={5}
-      />
+      {form.cta.callouts && form.cta.callouts.map((callout, ci) => (
+        <div key={ci} className="bg-slate-50 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-black uppercase tracking-widest text-teal-600">Callout {ci + 1}</p>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setCalloutType(ci, 'text')}
+                className={`text-xs font-bold px-3 py-1 rounded transition-colors ${callout.type !== 'button' ? 'bg-teal-500 text-white' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'}`}
+              >Inforuta</button>
+              <button
+                onClick={() => setCalloutType(ci, 'button')}
+                className={`text-xs font-bold px-3 py-1 rounded transition-colors ${callout.type === 'button' ? 'bg-teal-500 text-white' : 'bg-slate-200 text-slate-500 hover:bg-slate-300'}`}
+              >Knapp</button>
+            </div>
+          </div>
+          <TextField label="Rubrik" value={callout.title || ''} onChange={v => setCalloutField(ci, 'title', v)} />
+          {callout.type === 'button' ? (
+            <>
+              <TextField label="Knapptext" value={callout.label || ''} onChange={v => setCalloutField(ci, 'label', v)} />
+              <TextField label="URL" value={callout.url || ''} onChange={v => setCalloutField(ci, 'url', v)} />
+            </>
+          ) : (
+            <TextField
+              label="Text (radbrytningar stöds; rader som börjar med - blir punkter)"
+              value={callout.text || ''}
+              onChange={v => setCalloutField(ci, 'text', v)}
+              multiline
+              rows={5}
+            />
+          )}
+        </div>
+      ))}
 
       <ReferenceEditor
         value={form.references}
