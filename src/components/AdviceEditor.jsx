@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { resetArticleToDefault } from '../store'
+import ReferenceEditor from './ReferenceEditor'
 
 function ImageField({ label, value, onChange }) {
   return (
@@ -239,18 +240,18 @@ export default function AdviceEditor({ article, onSave }) {
         </div>
       ))}
 
-      <div className="grid grid-cols-2 gap-4">
-        <TextField label="Knapp-text" value={form.cta.buttonText || ''} onChange={v => set('cta.buttonText', v)} />
-        <TextField label="Knapp-URL" value={form.cta.buttonUrl || ''} onChange={v => set('cta.buttonUrl', v)} />
-      </div>
-
-      <SectionHeader title="Referencer" />
+      <TextField label="Callout-rubrik" value={form.cta.calloutTitle || ''} onChange={v => set('cta.calloutTitle', v)} />
       <TextField
-        label="Referencer (en per rad – visas i artikelns footer)"
-        value={form.references ?? ''}
-        onChange={v => set('references', v)}
+        label="Callout-text (stöder radbrytningar; rader som börjar med - blir punkter)"
+        value={form.cta.buttonText || ''}
+        onChange={v => set('cta.buttonText', v)}
         multiline
-        rows={6}
+        rows={5}
+      />
+
+      <ReferenceEditor
+        value={form.references}
+        onChange={v => set('references', v)}
       />
 
       <div className="pt-6 pb-16 space-y-3">

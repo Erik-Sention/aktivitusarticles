@@ -28,6 +28,7 @@ export default function AdvicePreview({ article, editable = true }) {
           title={article.cta.title}
           body={article.cta.body}
           cards={article.cta.cards}
+          calloutTitle={article.cta.calloutTitle}
           buttonText={article.cta.buttonText}
           buttonUrl={article.cta.buttonUrl}
         />

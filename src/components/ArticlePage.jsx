@@ -2,12 +2,15 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 import { fetchArticle, saveArticle } from '../store'
 import { ImageEditContext } from '../context/ImageEditContext'
+import { parseReferences } from '../lib/parseReferences'
 import ArticlePreview from './ArticlePreview'
 import ArticleEditor from './ArticleEditor'
 import AdvicePreview from './AdvicePreview'
 import AdviceEditor from './AdviceEditor'
+import PDFPreviewModal from './PDFPreviewModal'
 
 export default function ArticlePage() {
   const { id } = useParams()
@@ -19,7 +22,9 @@ export default function ArticlePage() {
   const [loading, setLoading]         = useState(true)
   const [mode, setMode]               = useState(initialMode)
   const [saved, setSaved]             = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
+  const [isExporting, setIsExporting]       = useState(false)
+  const [isExportingPDF, setIsExportingPDF] = useState(false)
+  const [showPDFPreview, setShowPDFPreview] = useState(false)
   const pdfRef = useRef(null)
 
   useEffect(() => {
@@ -103,11 +108,11 @@ export default function ArticlePage() {
         )
       )
 
-      // Capture at 2× for crisp output
+      // Capture at 4× for maximum sharpness when zooming on mobile
       // windowWidth/windowHeight ensure vh/vw units resolve consistently
       // regardless of the browser window size during export
       const canvas = await html2canvas(el, {
-        scale: 2,
+        scale: 4,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -124,7 +129,7 @@ export default function ArticlePage() {
         .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
 
       const a = document.createElement('a')
-      a.href = canvas.toDataURL('image/jpeg', 0.92)
+      a.href = canvas.toDataURL('image/jpeg', 0.95)
       a.download = `${slug}.jpg`
       a.click()
 
@@ -132,6 +137,119 @@ export default function ArticlePage() {
       console.error('JPEG export failed:', err)
     } finally {
       setIsExporting(false)
+    }
+  }
+
+  async function handleExportRefPDF() {
+    if (isExportingPDF) return
+    setIsExportingPDF(true)
+
+    try {
+      const refs = parseReferences(article.references).filter(r => r.text.trim())
+      if (refs.length === 0) {
+        alert('Den här artikeln har inga referenser att exportera.')
+        return
+      }
+
+      const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+
+      const pageW   = doc.internal.pageSize.getWidth()
+      const pageH   = doc.internal.pageSize.getHeight()
+      const marginX = 20
+      const marginY = 24
+      const maxW    = pageW - marginX * 2
+
+      const BLUE  = [0, 113, 186]
+      const SLATE = [100, 116, 139]
+      const DARK  = [15, 23, 42]
+
+      let y = marginY
+
+      // Header: blue top rule
+      doc.setFillColor(...BLUE)
+      doc.rect(marginX, y - 4, maxW, 0.8, 'F')
+      y += 4
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.setTextColor(...BLUE)
+      doc.text('AKTIVITUS', marginX, y)
+      y += 7
+
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(16)
+      doc.setTextColor(...DARK)
+      const titleStr = [article.title, article.titleAccent].filter(Boolean).join(' ')
+      doc.text(titleStr, marginX, y)
+      y += 8
+
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9)
+      doc.setTextColor(...SLATE)
+      doc.text('Källförteckning', marginX, y)
+      y += 6
+
+      doc.setDrawColor(...BLUE)
+      doc.setLineWidth(0.3)
+      doc.line(marginX, y, pageW - marginX, y)
+      y += 8
+
+      // Reference list
+      const lineH   = 5.5
+      const paraGap = 3
+
+      refs.forEach((ref, i) => {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(9)
+        const textLines = doc.splitTextToSize(ref.text, maxW - 5)
+        const entryH    = lineH * textLines.length + paraGap
+
+        if (y + entryH > pageH - 20) {
+          doc.addPage()
+          y = marginY
+        }
+
+        // Number
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(9)
+        doc.setTextColor(...BLUE)
+        doc.text(`${i + 1}.`, marginX, y)
+
+        // Citation text – blue and clickable if URL exists, dark otherwise
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(...(ref.url ? BLUE : DARK))
+        doc.text(textLines, marginX + 5, y)
+        const textBlockH = lineH * textLines.length
+        if (ref.url && ref.url.trim()) {
+          doc.link(marginX + 5, y - lineH + 0.5, maxW - 5, textBlockH, { url: ref.url })
+        }
+        y += textBlockH
+
+        y += paraGap
+      })
+
+      // Footer
+      doc.setDrawColor(...BLUE)
+      doc.setLineWidth(0.3)
+      doc.line(marginX, pageH - 16, pageW - marginX, pageH - 16)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7)
+      doc.setTextColor(...SLATE)
+      doc.text('Aktivitus AB · aktivitus.se', marginX, pageH - 11)
+      const dateStr = new Date().toLocaleDateString('sv-SE')
+      doc.text(dateStr, pageW - marginX - doc.getTextWidth(dateStr), pageH - 11)
+
+      const slug = [article.title, article.titleAccent]
+        .filter(Boolean).join('-').toLowerCase()
+        .replace(/[åä]/g, 'a').replace(/ö/g, 'o')
+        .replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+
+      doc.save(`${slug}-kallforteckning.pdf`)
+
+    } catch (err) {
+      console.error('PDF export failed:', err)
+    } finally {
+      setIsExportingPDF(false)
     }
   }
 
@@ -190,6 +308,38 @@ export default function ArticlePage() {
           </div>
 
           <button
+            onClick={() => setShowPDFPreview(true)}
+            className="bg-[#0071BA] hover:bg-[#005a94] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Exportera PDF
+          </button>
+
+          <button
+            onClick={handleExportRefPDF}
+            disabled={isExportingPDF}
+            className="bg-[#0071BA] hover:bg-[#005a94] disabled:opacity-60 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+          >
+            {isExportingPDF ? (
+              <>
+                <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" d="M12 2a10 10 0 0 1 10 10" />
+                </svg>
+                Genererar…
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Källförteckning PDF
+              </>
+            )}
+          </button>
+
+          <button
             onClick={handleExportJPEG}
             disabled={isExporting}
             className="bg-slate-900 hover:bg-slate-700 disabled:opacity-60 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
@@ -222,6 +372,10 @@ export default function ArticlePage() {
         isAdvice
           ? <AdviceEditor article={article} onSave={handleSave} />
           : <ArticleEditor article={article} onSave={handleSave} />
+      )}
+
+      {showPDFPreview && (
+        <PDFPreviewModal article={article} isAdvice={isAdvice} onClose={() => setShowPDFPreview(false)} />
       )}
 
       {/* Hidden export render container – pennikoner avaktiverade via editable={false} */}

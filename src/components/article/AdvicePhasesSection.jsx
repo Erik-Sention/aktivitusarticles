@@ -4,7 +4,7 @@ export default function AdvicePhasesSection({ phases, editable = true }) {
   return (
     <div className="print-advice-phases grid grid-cols-1 md:grid-cols-2 gap-20 mb-32">
       {phases.map((phase, index) => (
-        <div key={phase.number} className="space-y-6">
+        <div key={phase.number} className="print-phase space-y-6">
           <div className="flex items-center gap-4">
             <span className="text-4xl font-black italic" style={{ color: 'rgba(0, 113, 186, 0.25)' }}>{phase.number}</span>
             <h3 className="text-2xl font-bold uppercase tracking-tight text-slate-800">{phase.title}</h3>

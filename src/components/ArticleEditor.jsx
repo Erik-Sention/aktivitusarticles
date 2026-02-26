@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { resetArticleToDefault } from '../store'
+import ReferenceEditor from './ReferenceEditor'
 
 function ImageField({ label, value, onChange }) {
   return (
@@ -242,13 +243,9 @@ export default function ArticleEditor({ article, onSave }) {
         + Lägg till punkt
       </button>
 
-      <SectionHeader title="Referencer" />
-      <TextField
-        label="Referencer (en per rad – visas i artikelns footer)"
-        value={form.references ?? ''}
+      <ReferenceEditor
+        value={form.references}
         onChange={v => set('references', v)}
-        multiline
-        rows={6}
       />
 
       <div className="pt-6 pb-16 space-y-3">

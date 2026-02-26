@@ -1,9 +1,9 @@
-const REVIEWER = { name: 'Per Pliggen Andersson', title: 'Överläkare' }
+import { parseReferences } from '../../lib/parseReferences'
+
+const REVIEWER = { name: 'Per Pliggen Andersson', title: 'Överläkare på Aktivitus' }
 
 export default function ArticleFooter({ references, editable = true }) {
-  const refList = references
-    ? references.split('\n').map(r => r.trim()).filter(Boolean)
-    : []
+  const refList = parseReferences(references)
 
   return (
     <footer className="print-footer max-w-4xl mx-auto px-6 py-10 border-t border-slate-100">
@@ -20,7 +20,20 @@ export default function ArticleFooter({ references, editable = true }) {
           </p>
           <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
             {refList.map((ref, i) => (
-              <li key={i}>{ref}</li>
+              <li key={i}>
+                {ref.url ? (
+                  <a
+                    href={ref.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-[#0071BA] hover:underline"
+                  >
+                    {ref.text}
+                  </a>
+                ) : (
+                  ref.text
+                )}
+              </li>
             ))}
           </ol>
         </div>
