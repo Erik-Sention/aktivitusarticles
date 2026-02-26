@@ -12,7 +12,7 @@ export default function AdviceHeroSection({ breadcrumb, title, titleAccent, hero
         editable={editable}
       />
       <div className="print-hero-content relative z-10 max-w-5xl mx-auto px-10 w-full">
-        <nav className="flex gap-4 mb-6 font-bold uppercase tracking-widest text-[10px]" style={{ color: '#0071BA' }}>
+        <nav className="flex gap-4 mb-6 font-bold uppercase tracking-widest text-xl text-white">
           <span>{breadcrumb}</span>
         </nav>
         <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none uppercase">
